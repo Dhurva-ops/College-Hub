@@ -1,0 +1,5 @@
+{
+  "name": "College Hub",
+  "description": "A comprehensive app for college students to manage their academic life. It includes features like a class timetable, notes and study materials sharing, an attendance tracker, event and exam notifications, and a faculty contact list.",
+  "requestFramePermissions": []
+}
