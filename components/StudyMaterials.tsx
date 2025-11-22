@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Material, MaterialType } from '../types';
 import { Modal } from './Modal';
-import { PlusIcon, TrashIcon } from './Icons';
+import { PlusIcon, TrashIcon, DownloadIcon } from './Icons';
 
 interface StudyMaterialsProps {
   materials: Material[];
@@ -19,20 +19,37 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddMaterial = () => {
-    if (!newMaterial.title || (!newMaterial.content && newMaterial.type !== 'pdf')) return;
-    
-    let materialToAdd = { ...newMaterial, id: crypto.randomUUID() };
+    // Basic validation
+    if (!newMaterial.title) return;
+    if (newMaterial.type === 'link' && !newMaterial.content) return;
+    if (newMaterial.type === 'note' && !newMaterial.content) return;
+    if (newMaterial.type === 'pdf' && !fileInputRef.current?.files?.[0]) return;
+
+    const createMaterial = (content: string, fileName?: string) => {
+        const materialToAdd: Material = { 
+            ...newMaterial, 
+            id: crypto.randomUUID(), 
+            content, 
+            fileName 
+        };
+        setMaterials([...materials, materialToAdd]);
+        setIsModalOpen(false);
+        setNewMaterial({ title: '', type: 'note', content: '' });
+    };
 
     if (newMaterial.type === 'pdf' && fileInputRef.current?.files?.[0]) {
-      materialToAdd.fileName = fileInputRef.current.files[0].name;
-      // In a real app, you would upload the file and store the URL in 'content'.
-      // For this demo, we'll just use the filename.
-      materialToAdd.content = fileInputRef.current.files[0].name;
+      const file = fileInputRef.current.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        createMaterial(result, file.name);
+      };
+
+      reader.readAsDataURL(file);
+    } else {
+        createMaterial(newMaterial.content);
     }
-    
-    setMaterials([...materials, materialToAdd]);
-    setIsModalOpen(false);
-    setNewMaterial({ title: '', type: 'note', content: '' });
   };
   
   const handleDeleteMaterial = (id: string) => {
@@ -73,9 +90,23 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
                     {material.type === 'link' ? (
                         <a href={material.content} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{material.content}</a>
                     ) : material.type === 'pdf' ? (
-                        <p className="text-gray-600">{material.fileName}</p>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-600 mb-2 truncate" title={material.fileName}>{material.fileName || 'Document'}</p>
+                            {material.content && material.content.startsWith('data:') ? (
+                                <a 
+                                    href={material.content} 
+                                    download={material.fileName || 'download.pdf'}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/50 hover:bg-white/80 text-red-800 text-sm font-medium rounded transition-colors border border-red-200"
+                                >
+                                    <DownloadIcon className="w-4 h-4" />
+                                    Download PDF
+                                </a>
+                            ) : (
+                                <span className="text-xs text-gray-500 italic">Preview unavailable</span>
+                            )}
+                        </div>
                     ) : (
-                        <p className="text-gray-700 mt-1">{material.content}</p>
+                        <p className="text-gray-700 mt-1 whitespace-pre-wrap">{material.content}</p>
                     )}
                 </div>
             )
