@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Material, MaterialType } from '../types';
 import { Modal } from './Modal';
@@ -16,6 +15,7 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
     type: 'note',
     content: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddMaterial = () => {
@@ -35,15 +35,23 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
         setMaterials([...materials, materialToAdd]);
         setIsModalOpen(false);
         setNewMaterial({ title: '', type: 'note', content: '' });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setIsLoading(false);
     };
 
     if (newMaterial.type === 'pdf' && fileInputRef.current?.files?.[0]) {
+      setIsLoading(true);
       const file = fileInputRef.current.files[0];
       const reader = new FileReader();
       
       reader.onload = (e) => {
         const result = e.target?.result as string;
         createMaterial(result, file.name);
+      };
+
+      reader.onerror = () => {
+        console.error("Error reading file");
+        setIsLoading(false);
       };
 
       reader.readAsDataURL(file);
@@ -96,7 +104,7 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
                                 <a 
                                     href={material.content} 
                                     download={material.fileName || 'download.pdf'}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/50 hover:bg-white/80 text-red-800 text-sm font-medium rounded transition-colors border border-red-200"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/50 hover:bg-white/80 text-red-800 text-sm font-medium rounded transition-colors border border-red-200 shadow-sm"
                                 >
                                     <DownloadIcon className="w-4 h-4" />
                                     Download PDF
@@ -118,7 +126,7 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
             </div>
         )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Study Material">
+      <Modal isOpen={isModalOpen} onClose={() => !isLoading && setIsModalOpen(false)} title="Add Study Material">
         <div className="space-y-4">
           <input type="text" placeholder="Title" value={newMaterial.title} onChange={e => setNewMaterial({ ...newMaterial, title: e.target.value })} className="w-full p-2 border rounded" />
           <select value={newMaterial.type} onChange={e => setNewMaterial({ ...newMaterial, type: e.target.value as MaterialType, content: '' })} className="w-full p-2 border rounded">
@@ -129,7 +137,13 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
           {newMaterial.type === 'note' && <textarea placeholder="Note content..." value={newMaterial.content} onChange={e => setNewMaterial({ ...newMaterial, content: e.target.value })} className="w-full p-2 border rounded h-32"></textarea>}
           {newMaterial.type === 'link' && <input type="url" placeholder="https://example.com" value={newMaterial.content} onChange={e => setNewMaterial({ ...newMaterial, content: e.target.value })} className="w-full p-2 border rounded" />}
           {newMaterial.type === 'pdf' && <input type="file" ref={fileInputRef} accept=".pdf" className="w-full p-2 border rounded" />}
-          <button onClick={handleAddMaterial} className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Add Material</button>
+          <button 
+            onClick={handleAddMaterial} 
+            disabled={isLoading}
+            className={`w-full text-white p-2 rounded flex justify-center items-center ${isLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            {isLoading ? 'Processing...' : 'Add Material'}
+          </button>
         </div>
       </Modal>
     </div>

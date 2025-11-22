@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { useIndexedDB } from './hooks/useIndexedDB';
 import { Timetable } from './components/Timetable';
 import { StudyMaterials } from './components/StudyMaterials';
 import { AttendanceTracker } from './components/AttendanceTracker';
@@ -33,7 +33,8 @@ const App: React.FC = () => {
     const [loginError, setLoginError] = useState('');
 
     const [classes, setClasses] = useLocalStorage<Class[]>('classes', []);
-    const [materials, setMaterials] = useLocalStorage<Material[]>('materials', []);
+    // Use IndexedDB for materials to support large PDF files without hitting localStorage limits
+    const [materials, setMaterials] = useIndexedDB<Material[]>('materials', []);
     const [attendance, setAttendance] = useLocalStorage<AttendanceRecord[]>('attendance', []);
     const [events, setEvents] = useLocalStorage<AppEvent[]>('events', []);
     const [faculty, setFaculty] = useLocalStorage<Faculty[]>('faculty', []);
