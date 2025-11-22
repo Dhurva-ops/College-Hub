@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
 const DB_NAME = 'CollegeHubDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'materials_store';
+const DB_VERSION = 2;
+const STORE_NAME = 'college_data_store';
 
 export function useIndexedDB<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
@@ -29,6 +29,14 @@ export function useIndexedDB<T>(key: string, initialValue: T): [T, (value: T | (
           setStoredValue(getRequest.result);
         }
       };
+      
+      getRequest.onerror = () => {
+          console.error(`Error fetching key ${key} from IndexedDB`);
+      };
+    };
+
+    request.onerror = (event) => {
+        console.error("IndexedDB error:", event);
     };
 
     return () => { isMounted = false; };

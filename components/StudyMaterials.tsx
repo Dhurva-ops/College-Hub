@@ -104,7 +104,7 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
                                 <a 
                                     href={material.content} 
                                     download={material.fileName || 'download.pdf'}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/50 hover:bg-white/80 text-red-800 text-sm font-medium rounded transition-colors border border-red-200 shadow-sm"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/50 hover:bg-white/80 text-red-900 text-sm font-medium rounded transition-colors border border-red-200 shadow-sm w-full justify-center sm:w-auto sm:justify-start"
                                 >
                                     <DownloadIcon className="w-4 h-4" />
                                     Download PDF
@@ -136,7 +136,12 @@ export const StudyMaterials: React.FC<StudyMaterialsProps> = ({ materials, setMa
           </select>
           {newMaterial.type === 'note' && <textarea placeholder="Note content..." value={newMaterial.content} onChange={e => setNewMaterial({ ...newMaterial, content: e.target.value })} className="w-full p-2 border rounded h-32"></textarea>}
           {newMaterial.type === 'link' && <input type="url" placeholder="https://example.com" value={newMaterial.content} onChange={e => setNewMaterial({ ...newMaterial, content: e.target.value })} className="w-full p-2 border rounded" />}
-          {newMaterial.type === 'pdf' && <input type="file" ref={fileInputRef} accept=".pdf" className="w-full p-2 border rounded" />}
+          {newMaterial.type === 'pdf' && (
+            <div>
+                <input type="file" ref={fileInputRef} accept=".pdf" className="w-full p-2 border rounded" />
+                <p className="text-xs text-gray-500 mt-1">Upload PDF documents (stored securely in your browser)</p>
+            </div>
+          )}
           <button 
             onClick={handleAddMaterial} 
             disabled={isLoading}

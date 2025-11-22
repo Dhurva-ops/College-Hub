@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
 import { useIndexedDB } from './hooks/useIndexedDB';
 import { Timetable } from './components/Timetable';
 import { StudyMaterials } from './components/StudyMaterials';
@@ -32,12 +31,12 @@ const App: React.FC = () => {
     const [passwordInput, setPasswordInput] = useState('');
     const [loginError, setLoginError] = useState('');
 
-    const [classes, setClasses] = useLocalStorage<Class[]>('classes', []);
-    // Use IndexedDB for materials to support large PDF files without hitting localStorage limits
+    // Use IndexedDB for all storage to ensure persistence and support for large data (PDFs)
+    const [classes, setClasses] = useIndexedDB<Class[]>('classes', []);
     const [materials, setMaterials] = useIndexedDB<Material[]>('materials', []);
-    const [attendance, setAttendance] = useLocalStorage<AttendanceRecord[]>('attendance', []);
-    const [events, setEvents] = useLocalStorage<AppEvent[]>('events', []);
-    const [faculty, setFaculty] = useLocalStorage<Faculty[]>('faculty', []);
+    const [attendance, setAttendance] = useIndexedDB<AttendanceRecord[]>('attendance', []);
+    const [events, setEvents] = useIndexedDB<AppEvent[]>('events', []);
+    const [faculty, setFaculty] = useIndexedDB<Faculty[]>('faculty', []);
 
     // Redirect from dashboard if admin mode is disabled
     useEffect(() => {
